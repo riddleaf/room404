@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOM_404 — エラー解析 EP02</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050510;
+    color: #00ff88;
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .terminal {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #00ff8844;
+    border-radius: 4px;
+    padding: 24px 20px;
+    background: #08081a;
+    box-shadow: 0 0 30px #00ff8818;
+  }
+
+  .term-header {
+    font-size: 11px;
+    color: #00ff8866;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .step-label {
+    font-size: 10px;
+    color: #00ff8855;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+
+  .stage-title {
+    font-size: 14px;
+    color: #00ff88cc;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: #aaffcc;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+
+  .log-block {
+    background: #030308;
+    border-left: 2px solid #00ff8844;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    line-height: 2;
+    color: #66ffaa;
+  }
+
+  .coord-label {
+    color: #00ff8866;
+    font-size: 11px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .coord-list {
+    color: #88ffcc;
+    padding-left: 12px;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .hint-area {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .hint-btn {
+    background: transparent;
+    border: 1px solid #00ff8833;
+    color: #00ff8877;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .hint-btn:hover { border-color: #00ff8866; color: #00ff88aa; }
+  .hint-btn.active { border-color: #00ff8888; color: #00ff88cc; }
+
+  .hint-text {
+    background: #030308;
+    border: 1px solid #00ff8822;
+    color: #aaffcc;
+    font-size: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    line-height: 1.7;
+    border-radius: 2px;
+    display: none;
+  }
+
+  .hint-text.visible { display: block; }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: #030308;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    outline: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .answer-input:focus { border-color: #00ff88aa; box-shadow: 0 0 8px #00ff8822; }
+
+  .enter-btn {
+    background: #00ff8818;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .enter-btn:hover { background: #00ff8830; border-color: #00ff88aa; }
+
+  .error-msg {
+    color: #ff4455;
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .transition-overlay {
+    position: fixed;
+    inset: 0;
+    background: #050510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+
+  .transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .transition-text {
+    color: #00ff88;
+    font-size: 13px;
+    letter-spacing: 4px;
+    animation: blink 0.8s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .success-screen { text-align: center; }
+
+  .success-title {
+    font-size: 22px;
+    color: #00ff88;
+    margin-bottom: 8px;
+    letter-spacing: 4px;
+  }
+
+  .success-code {
+    font-size: 28px;
+    color: #ffffff;
+    letter-spacing: 6px;
+    margin: 20px 0;
+    font-weight: bold;
+  }
+
+  .success-diary {
+    font-size: 13px;
+    color: #ccddcc;
+    line-height: 2;
+    margin: 20px 0;
+    text-align: left;
+    padding: 18px 16px;
+    background: #030308;
+    border-left: 2px solid #00ff8844;
+  }
+
+  .next-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #00ff8818;
+    border: 1px solid #00ff8866;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .next-link:hover { background: #00ff8830; border-color: #00ff88aa; }
+
+  .critical-tag { color: #ff6644; }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="term-header">ROOM_404 // エラー解析システム EP.02</div>
+
+  <!-- STEP 1: グリッドマップ -->
+  <div class="step active" id="step1">
+    <div class="step-label">STEP 1 / 2</div>
+    <div class="stage-title">STAGE 01「グリッドマップ」</div>
+
+    <div class="instruction">上のグリッドマップ画像を確認してください。</div>
+
+    <div class="log-block">
+      <span class="coord-label">バグ発生地点（確認済み）:</span>
+      <span class="coord-list">B-1,  A-2,  C-2,  C-3,  C-1</span>
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h1-btn1" onclick="toggleHint('h1-hint1','h1-btn1',null)">ヒント①</button>
+        <div class="hint-text" id="h1-hint1">「B-1」は「B列の1行目」を意味する。グリッドの上端に列ラベル（A〜E）、左端に行ラベル（1〜5）がある。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn2" onclick="toggleHint('h1-hint2','h1-btn2','h1-hint1')">ヒント②</button>
+        <div class="hint-text" id="h1-hint2">5つの座標それぞれのマスに、1文字ずつ入っている。グリッドからその文字を探して拾おう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn3" onclick="toggleHint('h1-hint3','h1-btn3','h1-hint2')">ヒント③</button>
+        <div class="hint-text" id="h1-hint3">B-1、A-2、C-2、C-3、C-1 の順番に文字を並べると、5文字の英単語になる。</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input class="answer-input" id="input1" type="text" maxlength="8" placeholder="_ _ _ _ _" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkStep1()">
+      <button class="enter-btn" onclick="checkStep1()">ENTER</button>
+    </div>
+    <div class="error-msg" id="err1">── エラー：コードが一致しない。もう一度試してください。</div>
+  </div>
+
+  <!-- STEP 2: クリティカルログ -->
+  <div class="step" id="step2">
+    <div class="step-label">STEP 2 / 2</div>
+    <div class="stage-title">STAGE 02「クリティカルログ」</div>
+
+    <div class="log-block">
+      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR_0: 予期しない終了</span>
+      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR_7: メモリ解放失敗</span>
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h2-btn1" onclick="toggleHint('h2-hint1','h2-btn1',null)">ヒント①</button>
+        <div class="hint-text" id="h2-hint1">[CRITICAL] というタグや「予期しない終了」という説明は関係ない。ERR_ の部分だけを見よう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn2" onclick="toggleHint('h2-hint2','h2-btn2','h2-hint1')">ヒント②</button>
+        <div class="hint-text" id="h2-hint2">ERR_ の後ろに数字がついている。2行あるので、それぞれ1桁ずつ取れる。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn3" onclick="toggleHint('h2-hint3','h2-btn3','h2-hint2')">ヒント③</button>
+        <div class="hint-text" id="h2-hint3">ERR_0 と ERR_7、上から順に並べると「07」になる。0から始まる2桁の数字として入力しよう。</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input class="answer-input" id="input2" type="text" maxlength="4" placeholder="_ _" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkStep2()">
+      <button class="enter-btn" onclick="checkStep2()">ENTER</button>
+    </div>
+    <div class="error-msg" id="err2">── エラー：コードが一致しない。もう一度試してください。</div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step" id="stepSuccess">
+    <div class="success-screen">
+      <div class="success-title">認証成功</div>
+      <div class="success-code" id="final-code">GHOST07</div>
+      <div class="success-diary">
+        石田龍雄。お前が死んで、もう3年になる。このゲームは、お前と一緒に作り始めたものだ。Page Not Found。お前への電話が、もう繋がらない。でも俺は、続けた。お前の分まで。
+      </div>
+      <a class="next-link" href="https://note.com/ridleaf/n/n8b6f66eee90c" target="_blank">▶ 話3「最後のセーブデータ」へ進む</a>
+    </div>
+  </div>
+</div>
+
+<div class="transition-overlay" id="transition">
+  <div class="transition-text">解析中...</div>
+  <div style="font-size:11px;color:#00ff8855;letter-spacing:3px;">PROCESSING</div>
+</div>
+
+<script>
+  var storedPart1 = '';
+
+  function toggleHint(hintId, btnId, requireId) {
+    if (requireId) {
+      var req = document.getElementById(requireId);
+      if (!req.classList.contains('visible')) return;
+    }
+    var hint = document.getElementById(hintId);
+    var btn = document.getElementById(btnId);
+    if (hint.classList.contains('visible')) {
+      hint.classList.remove('visible');
+      btn.classList.remove('active');
+    } else {
+      hint.classList.add('visible');
+      btn.classList.add('active');
+    }
+  }
+
+  function checkStep1() {
+    var val = document.getElementById('input1').value.trim().toUpperCase();
+    var err = document.getElementById('err1');
+    if (val === 'GHOST') {
+      err.classList.remove('visible');
+      storedPart1 = 'GHOST';
+      showTransition(function() {
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+      });
+    } else {
+      err.classList.add('visible');
+      document.getElementById('input1').focus();
+    }
+  }
+
+  function checkStep2() {
+    var val = document.getElementById('input2').value.trim();
+    var err = document.getElementById('err2');
+    var padded = val.length === 1 ? '0' + val : val;
+    if (padded === '07' || val === '07' || val === '7') {
+      err.classList.remove('visible');
+      var finalCode = storedPart1 + '07';
+      document.getElementById('final-code').textContent = finalCode;
+      showTransition(function() {
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('stepSuccess').classList.add('active');
+      });
+    } else {
+      err.classList.add('visible');
+      document.getElementById('input2').focus();
+    }
+  }
+
+  function showTransition(callback) {
+    var overlay = document.getElementById('transition');
+    overlay.classList.add('active');
+    setTimeout(function() {
+      callback();
+      setTimeout(function() {
+        overlay.classList.remove('active');
+      }, 400);
+    }, 900);
+  }
+</script>
+</body>
+</html>

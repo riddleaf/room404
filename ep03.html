@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOM_404 — 最終解錠 EP03</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050510;
+    color: #00ff88;
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .terminal {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #00ff8844;
+    border-radius: 4px;
+    padding: 24px 20px;
+    background: #08081a;
+    box-shadow: 0 0 30px #00ff8818;
+  }
+
+  .term-header {
+    font-size: 11px;
+    color: #00ff8866;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .step-label {
+    font-size: 10px;
+    color: #00ff8855;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+
+  .stage-title {
+    font-size: 14px;
+    color: #00ff88cc;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: #aaffcc;
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+
+  .hint-area {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .hint-btn {
+    background: transparent;
+    border: 1px solid #00ff8833;
+    color: #00ff8877;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .hint-btn:hover { border-color: #00ff8866; color: #00ff88aa; }
+  .hint-btn.active { border-color: #00ff8888; color: #00ff88cc; }
+
+  .hint-text {
+    background: #030308;
+    border: 1px solid #00ff8822;
+    color: #aaffcc;
+    font-size: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    line-height: 1.7;
+    border-radius: 2px;
+    display: none;
+  }
+
+  .hint-text.visible { display: block; }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: #030308;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    outline: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .answer-input:focus { border-color: #00ff88aa; box-shadow: 0 0 8px #00ff8822; }
+  .answer-input[readonly] {
+    border-color: #00ff8822;
+    color: #00ff8888;
+    cursor: default;
+  }
+
+  .enter-btn {
+    background: #00ff8818;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .enter-btn:hover { background: #00ff8830; border-color: #00ff88aa; }
+
+  .error-msg {
+    color: #ff4455;
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .transition-overlay {
+    position: fixed;
+    inset: 0;
+    background: #050510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+
+  .transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .transition-text {
+    color: #00ff88;
+    font-size: 13px;
+    letter-spacing: 4px;
+    animation: blink 0.8s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* STEP 2: lock fields */
+  .lock-title {
+    font-size: 13px;
+    color: #aaffcc;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .field-group {
+    margin-bottom: 16px;
+  }
+
+  .field-label {
+    font-size: 11px;
+    color: #00ff8866;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff8822;
+    border: 1px solid #00ff8855;
+    display: inline-block;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+
+  .dot.green {
+    background: #00ff88;
+    border-color: #00ff88;
+    box-shadow: 0 0 6px #00ff88;
+  }
+
+  .lock-input {
+    width: 100%;
+    background: #030308;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    outline: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .lock-input:focus { border-color: #00ff88aa; }
+  .lock-input.correct { border-color: #00ff88; }
+  .lock-input[readonly] {
+    border-color: #00ff8833;
+    color: #00ff8888;
+    cursor: default;
+  }
+
+  .unlock-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: #00ff8818;
+    border: 1px solid #00ff8855;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 3px;
+    transition: all 0.2s;
+  }
+
+  .unlock-btn:hover { background: #00ff8830; }
+  .unlock-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* SUCCESS */
+  .success-screen {}
+
+  .success-title-final {
+    font-size: 16px;
+    color: #00ff88;
+    letter-spacing: 4px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .final-message {
+    font-size: 14px;
+    color: #e8e8e8;
+    line-height: 2.2;
+    padding: 24px 20px;
+    background: #0a0a1a;
+    border-radius: 2px;
+    text-align: left;
+  }
+
+  .final-sign {
+    text-align: right;
+    margin-top: 16px;
+    color: #aaaaaa;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="term-header">ROOM_404 // 最終解錠システム EP.03</div>
+
+  <!-- STEP 1: 開発日誌 -->
+  <div class="step active" id="step1">
+    <div class="step-label">STEP 1 / 2</div>
+    <div class="stage-title">STAGE 01「開発日誌」</div>
+
+    <div class="instruction">
+      上のリンクから「野々村礼の開発日誌」を読んでください。<br>
+      アルファベットで始まる3つの行の、最初の文字を並べてみよう。
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h1-btn1" onclick="toggleHint('h1-hint1','h1-btn1',null)">ヒント①</button>
+        <div class="hint-text" id="h1-hint1">開発日誌の本文はほぼ日本語だが、アルファベットで始まる行が3つある。まずその3行だけを探してみよう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn2" onclick="toggleHint('h1-hint2','h1-btn2','h1-hint1')">ヒント②</button>
+        <div class="hint-text" id="h1-hint2">3つの行はそれぞれ異なる文字で始まっている。その先頭の1文字ずつを、上から順番に並べてみよう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn3" onclick="toggleHint('h1-hint3','h1-btn3','h1-hint2')">ヒント③</button>
+        <div class="hint-text" id="h1-hint3">R、E、I の3文字。この物語に登場するある人物の名前を、ローマ字で読んでみよう。</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input class="answer-input" id="input1" type="text" maxlength="5" placeholder="_ _ _" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkStep1()">
+      <button class="enter-btn" onclick="checkStep1()">ENTER</button>
+    </div>
+    <div class="error-msg" id="err1">── エラー：コードが一致しない。もう一度試してください。</div>
+  </div>
+
+  <!-- STEP 2: 最終ロック -->
+  <div class="step" id="step2">
+    <div class="step-label">STEP 2 / 2</div>
+    <div class="stage-title">STAGE 02「最終ロック」</div>
+
+    <div class="lock-title">
+      3つのコードが揃えば、最後のセーブデータが開く
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h2-btn1" onclick="toggleHint('h2-hint1','h2-btn1',null)">ヒント①</button>
+        <div class="hint-text" id="h2-hint1">話1・話2のCodePenに戻って、もう一度解いてみよう。コードは各話の最後に表示される。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn2" onclick="toggleHint('h2-hint2','h2-btn2','h2-hint1')">ヒント②</button>
+        <div class="hint-text" id="h2-hint2">話1のコード：STAGE01の答え（4文字）+ STAGE02の答え（2桁の数字）を連結したもの。話2も同じ形式。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn3" onclick="toggleHint('h2-hint3','h2-btn3','h2-hint2')">ヒント③</button>
+        <div class="hint-text" id="h2-hint3">話1：D○○R + 数字2桁 / 話2：G○○S○ + 数字2桁。それぞれ7文字のコードだ。</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        <span class="dot" id="dot1"></span>
+        話1の最終コード（6文字）
+      </div>
+      <input class="lock-input" id="lock1" type="text" maxlength="6" placeholder="_ _ _ _ _ _" autocomplete="off" autocorrect="off" spellcheck="false" oninput="checkLockField(1)" onkeydown="if(event.key==='Enter') tryUnlock()">
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        <span class="dot" id="dot2"></span>
+        話2の最終コード（7文字）
+      </div>
+      <input class="lock-input" id="lock2" type="text" maxlength="7" placeholder="_ _ _ _ _ _ _" autocomplete="off" autocorrect="off" spellcheck="false" oninput="checkLockField(2)" onkeydown="if(event.key==='Enter') tryUnlock()">
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        <span class="dot green" id="dot3"></span>
+        開発日誌の答え（3文字）
+      </div>
+      <input class="lock-input correct" id="lock3" type="text" value="REI" readonly>
+    </div>
+
+    <button class="unlock-btn" id="unlockBtn" onclick="tryUnlock()">UNLOCK</button>
+    <div class="error-msg" id="err2">── エラー：コードが揃っていない。確認してください。</div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step" id="stepSuccess">
+    <div class="success-title-final">-- 解錠完了 --</div>
+    <div class="final-message">
+      野々村礼より、このゲームを最後までプレイしてくれたあなたへ。<br><br>
+      俺がROOM_404を完成させた理由は、石田が「解けた瞬間が一番気持ちいい」と言った、その瞬間を、誰かに届けたかったからだ。<br><br>
+      404は、見つからないエラーだ。でも今、あなたはこのページを見つけてくれた。<br><br>
+      ありがとう。石田の分まで。
+      <div class="final-sign">── 野々村礼</div>
+    </div>
+  </div>
+</div>
+
+<div class="transition-overlay" id="transition">
+  <div class="transition-text">解錠中...</div>
+  <div style="font-size:11px;color:#00ff8855;letter-spacing:3px;">UNLOCKING</div>
+</div>
+
+<script>
+  var field1ok = false;
+  var field2ok = false;
+
+  function toggleHint(hintId, btnId, requireId) {
+    if (requireId) {
+      var req = document.getElementById(requireId);
+      if (!req.classList.contains('visible')) return;
+    }
+    var hint = document.getElementById(hintId);
+    var btn = document.getElementById(btnId);
+    if (hint.classList.contains('visible')) {
+      hint.classList.remove('visible');
+      btn.classList.remove('active');
+    } else {
+      hint.classList.add('visible');
+      btn.classList.add('active');
+    }
+  }
+
+  function checkStep1() {
+    var val = document.getElementById('input1').value.trim().toUpperCase();
+    var err = document.getElementById('err1');
+    if (val === 'REI') {
+      err.classList.remove('visible');
+      showTransition(function() {
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('lock3').value = 'REI';
+      });
+    } else {
+      err.classList.add('visible');
+      document.getElementById('input1').focus();
+    }
+  }
+
+  function checkLockField(n) {
+    var input = document.getElementById('lock' + n);
+    var dot = document.getElementById('dot' + n);
+    var val = input.value.trim().toUpperCase();
+    var correct = (n === 1) ? 'DOOR42' : 'GHOST07';
+    if (val === correct) {
+      input.classList.add('correct');
+      dot.classList.add('green');
+      if (n === 1) field1ok = true;
+      if (n === 2) field2ok = true;
+    } else {
+      input.classList.remove('correct');
+      dot.classList.remove('green');
+      if (n === 1) field1ok = false;
+      if (n === 2) field2ok = false;
+    }
+  }
+
+  function tryUnlock() {
+    var v1 = document.getElementById('lock1').value.trim().toUpperCase();
+    var v2 = document.getElementById('lock2').value.trim().toUpperCase();
+    var err = document.getElementById('err2');
+    if (v1 === 'DOOR42' && v2 === 'GHOST07') {
+      err.classList.remove('visible');
+      showTransition(function() {
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('stepSuccess').classList.add('active');
+      });
+    } else {
+      err.classList.add('visible');
+    }
+  }
+
+  function showTransition(callback) {
+    var overlay = document.getElementById('transition');
+    overlay.classList.add('active');
+    setTimeout(function() {
+      callback();
+      setTimeout(function() {
+        overlay.classList.remove('active');
+      }, 400);
+    }, 1100);
+  }
+</script>
+</body>
+</html>

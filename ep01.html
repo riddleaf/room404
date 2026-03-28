@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOM_404 — 認証システム</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050510;
+    color: #00ff88;
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .terminal {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #00ff8844;
+    border-radius: 4px;
+    padding: 24px 20px;
+    background: #08081a;
+    box-shadow: 0 0 30px #00ff8818;
+  }
+
+  .term-header {
+    font-size: 11px;
+    color: #00ff8866;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .step-label {
+    font-size: 10px;
+    color: #00ff8855;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+
+  .stage-title {
+    font-size: 14px;
+    color: #00ff88cc;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: #aaffcc;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+
+  .log-block {
+    background: #030308;
+    border-left: 2px solid #00ff8844;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    line-height: 2;
+    color: #66ffaa;
+  }
+
+  .log-line { display: block; }
+  .log-time { color: #00ff8855; }
+  .log-text { color: #88ffcc; }
+
+  .hint-area {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .hint-btn {
+    background: transparent;
+    border: 1px solid #00ff8833;
+    color: #00ff8877;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .hint-btn:hover {
+    border-color: #00ff8866;
+    color: #00ff88aa;
+  }
+
+  .hint-btn.active {
+    border-color: #00ff8888;
+    color: #00ff88cc;
+  }
+
+  .hint-text {
+    background: #030308;
+    border: 1px solid #00ff8822;
+    color: #aaffcc;
+    font-size: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    line-height: 1.7;
+    border-radius: 2px;
+    display: none;
+  }
+
+  .hint-text.visible { display: block; }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: #030308;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    outline: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .answer-input:focus { border-color: #00ff88aa; box-shadow: 0 0 8px #00ff8822; }
+
+  .enter-btn {
+    background: #00ff8818;
+    border: 1px solid #00ff8844;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .enter-btn:hover { background: #00ff8830; border-color: #00ff8888; }
+
+  .error-msg {
+    color: #ff4455;
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #00ff8818;
+    margin: 24px 0;
+  }
+
+  /* Transition animation */
+  .transition-overlay {
+    position: fixed;
+    inset: 0;
+    background: #050510;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+
+  .transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .transition-text {
+    color: #00ff88;
+    font-size: 13px;
+    letter-spacing: 4px;
+    animation: blink 0.8s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Step containers */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* Success screen */
+  .success-screen {
+    text-align: center;
+  }
+
+  .success-title {
+    font-size: 22px;
+    color: #00ff88;
+    margin-bottom: 8px;
+    letter-spacing: 4px;
+  }
+
+  .success-code {
+    font-size: 28px;
+    color: #ffffff;
+    letter-spacing: 6px;
+    margin: 20px 0;
+    font-weight: bold;
+  }
+
+  .success-story {
+    font-size: 13px;
+    color: #aaffcc;
+    line-height: 1.9;
+    margin: 20px 0;
+    text-align: left;
+    padding: 16px;
+    background: #030308;
+    border-left: 2px solid #00ff8844;
+  }
+
+  .next-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #00ff8818;
+    border: 1px solid #00ff8866;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .next-link:hover { background: #00ff8830; border-color: #00ff88aa; }
+
+  /* Step 2 note instruction */
+  .note-instruction {
+    font-size: 12px;
+    color: #88ffcc99;
+    font-style: italic;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="term-header">ROOM_404 // 認証システム v0.9b</div>
+
+  <!-- STEP 1: STAGE 01 デバッグログ -->
+  <div class="step active" id="step1">
+    <div class="step-label">STEP 1 / 2</div>
+    <div class="stage-title">STAGE 01「デバッグログ」</div>
+
+    <div class="log-block">
+      <span class="log-line"><span class="log-time">[00:00:01]</span> <span class="log-text">Detected anomaly in save file header</span></span>
+      <span class="log-line"><span class="log-time">[00:00:02]</span> <span class="log-text">Object initialization skipped: null reference</span></span>
+      <span class="log-line"><span class="log-time">[00:00:03]</span> <span class="log-text">Object renderer disconnected from pipeline</span></span>
+      <span class="log-line"><span class="log-time">[00:00:04]</span> <span class="log-text">Runtime: segmentation fault at address 0xFF</span></span>
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h1-btn1" onclick="toggleHint('h1-hint1', 'h1-btn1', null)">ヒント①</button>
+        <div class="hint-text" id="h1-hint1">タイムスタンプ [00:00:01] や 0xFF のような数字は関係ない。ログのテキスト部分だけを見よう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn2" onclick="toggleHint('h1-hint2', 'h1-btn2', 'h1-hint1')">ヒント②</button>
+        <div class="hint-text" id="h1-hint2">4行それぞれで、最初に登場する英単語に注目してみよう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h1-btn3" onclick="toggleHint('h1-hint3', 'h1-btn3', 'h1-hint2')">ヒント③</button>
+        <div class="hint-text" id="h1-hint3">その4つの単語の頭文字を上から順に並べると、4文字の英単語になる。Detected / Object / Object / Runtime ——。</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input class="answer-input" id="input1" type="text" maxlength="8" placeholder="_ _ _ _" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkStep1()">
+      <button class="enter-btn" onclick="checkStep1()">ENTER</button>
+    </div>
+    <div class="error-msg" id="err1">── エラー：コードが一致しない。もう一度試してください。</div>
+  </div>
+
+  <!-- STEP 2: STAGE 02 タイトル画面のノイズ -->
+  <div class="step" id="step2">
+    <div class="step-label">STEP 2 / 2</div>
+    <div class="stage-title">STAGE 02「タイトル画面のノイズ」</div>
+
+    <div class="instruction">
+      上の「ROOM_404タイトル画面」の画像をもう一度見てください。
+    </div>
+    <div class="note-instruction">
+      明るく輝く星だけを追うと、数字が見えてくるはずです。
+    </div>
+
+    <div class="hint-area">
+      <div>
+        <button class="hint-btn" id="h2-btn1" onclick="toggleHint('h2-hint1', 'h2-btn1', null)">ヒント①</button>
+        <div class="hint-text" id="h2-hint1">画面全体をぼんやり見てみよう。薄暗い星の中に、明らかに他より明るく輝いている星がある。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn2" onclick="toggleHint('h2-hint2', 'h2-btn2', 'h2-hint1')">ヒント②</button>
+        <div class="hint-text" id="h2-hint2">明るい星は画面の左側と右側に分かれて集まっている。それぞれの塊を独立したグループとして見てみよう。</div>
+      </div>
+      <div>
+        <button class="hint-btn" id="h2-btn3" onclick="toggleHint('h2-hint3', 'h2-btn3', 'h2-hint2')">ヒント③</button>
+        <div class="hint-text" id="h2-hint3">左の塊と右の塊が、それぞれ1つの数字の形を作っている。2つの数字を左から順に並べると、2桁の答えになる。</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input class="answer-input" id="input2" type="text" maxlength="4" placeholder="_ _" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkStep2()">
+      <button class="enter-btn" onclick="checkStep2()">ENTER</button>
+    </div>
+    <div class="error-msg" id="err2">── エラー：コードが一致しない。もう一度試してください。</div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step" id="stepSuccess">
+    <div class="success-screen">
+      <div class="success-title">認証成功</div>
+      <div class="success-code" id="final-code">DOOR42</div>
+      <div class="success-story">
+        ROOM_404が起動した。野々村の意図がわかり始める——
+      </div>
+      <a class="next-link" href="https://note.com/ridleaf/n/n00498e8f1cde" target="_blank">▶ 話2「バグの迷宮」へ進む</a>
+    </div>
+  </div>
+</div>
+
+<!-- Transition overlay -->
+<div class="transition-overlay" id="transition">
+  <div class="transition-text">認証中...</div>
+  <div style="font-size:11px;color:#00ff8855;letter-spacing:3px;">PROCESSING</div>
+</div>
+
+<script>
+  var storedPart1 = '';
+
+  function toggleHint(hintId, btnId, requireId) {
+    if (requireId) {
+      var req = document.getElementById(requireId);
+      if (!req.classList.contains('visible')) {
+        return;
+      }
+    }
+    var hint = document.getElementById(hintId);
+    var btn = document.getElementById(btnId);
+    if (hint.classList.contains('visible')) {
+      hint.classList.remove('visible');
+      btn.classList.remove('active');
+    } else {
+      hint.classList.add('visible');
+      btn.classList.add('active');
+    }
+  }
+
+  function checkStep1() {
+    var val = document.getElementById('input1').value.trim().toUpperCase();
+    var err = document.getElementById('err1');
+    if (val === 'DOOR') {
+      err.classList.remove('visible');
+      storedPart1 = 'DOOR';
+      showTransition(function() {
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+      });
+    } else {
+      err.classList.add('visible');
+      document.getElementById('input1').focus();
+    }
+  }
+
+  function checkStep2() {
+    var val = document.getElementById('input2').value.trim();
+    var err = document.getElementById('err2');
+    var normalized = val.replace(/^0+/, '') === '' ? '0' : val.replace(/^0+/, '');
+    var padded = val.length === 2 ? val : (val.length === 1 ? '0' + val : val);
+    if (val === '42' || val === '42') {
+      err.classList.remove('visible');
+      var finalCode = storedPart1 + padded;
+      document.getElementById('final-code').textContent = finalCode;
+      showTransition(function() {
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('stepSuccess').classList.add('active');
+      });
+    } else {
+      err.classList.add('visible');
+      document.getElementById('input2').focus();
+    }
+  }
+
+  function showTransition(callback) {
+    var overlay = document.getElementById('transition');
+    overlay.classList.add('active');
+    setTimeout(function() {
+      callback();
+      setTimeout(function() {
+        overlay.classList.remove('active');
+      }, 400);
+    }, 900);
+  }
+</script>
+</body>
+</html>
