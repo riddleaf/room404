@@ -69,6 +69,7 @@
   .log-line { display: block; }
   .log-time { color: #00ff8855; }
   .log-text { color: #88ffcc; }
+  .key-char { color: #00ffee; text-shadow: 0 0 6px #00ffee55; font-weight: bold; }
 
   .hint-area {
     margin-bottom: 20px;
@@ -278,10 +279,10 @@
     <div class="stage-title">STAGE 01「デバッグログ」</div>
 
     <div class="log-block">
-      <span class="log-line"><span class="log-time">[00:00:01]</span> <span class="log-text">Detected anomaly in save file header</span></span>
-      <span class="log-line"><span class="log-time">[00:00:02]</span> <span class="log-text">Object initialization skipped: null reference</span></span>
-      <span class="log-line"><span class="log-time">[00:00:03]</span> <span class="log-text">Object renderer disconnected from pipeline</span></span>
-      <span class="log-line"><span class="log-time">[00:00:04]</span> <span class="log-text">Runtime: segmentation fault at address 0xFF</span></span>
+      <span class="log-line"><span class="log-time">[00:00:01]</span> <span class="log-text"><span class="key-char">D</span>etected anomaly in save file header</span></span>
+      <span class="log-line"><span class="log-time">[00:00:02]</span> <span class="log-text"><span class="key-char">O</span>bject initialization skipped: null reference</span></span>
+      <span class="log-line"><span class="log-time">[00:00:03]</span> <span class="log-text"><span class="key-char">O</span>bject renderer disconnected from pipeline</span></span>
+      <span class="log-line"><span class="log-time">[00:00:04]</span> <span class="log-text"><span class="key-char">R</span>untime: segmentation fault at address 0xFF</span></span>
     </div>
 
     <div class="hint-area">
