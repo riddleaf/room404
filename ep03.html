@@ -304,22 +304,23 @@
     <div class="stage-title">STAGE 01「開発日誌」</div>
 
     <div class="instruction">
-      上のリンクから「野々村礼の開発日誌」を読んでください。<br>
-      アルファベットで始まる3つの行の、最初の文字を並べてみよう。
+      上の開発日誌に含まれる3つの日付に注目してください。<br>
+      各日付の「日にち」を数字として取り出し、<br>
+      A=1・B=2・C=3……Z=26 の対応でアルファベットに変換しよう。
     </div>
 
     <div class="hint-area">
       <div>
         <button class="hint-btn" id="h1-btn1" onclick="toggleHint('h1-hint1','h1-btn1',null)">ヒント①</button>
-        <div class="hint-text" id="h1-hint1">開発日誌の本文はほぼ日本語だが、アルファベットで始まる行が3つある。まずその3行だけを探してみよう。</div>
+        <div class="hint-text" id="h1-hint1">3つの日誌ブロックはそれぞれ [LOG: YYYY-MM-DD] の形式で日付が記録されている。その末尾2桁（DD）が「日にち」だ。</div>
       </div>
       <div>
         <button class="hint-btn" id="h1-btn2" onclick="toggleHint('h1-hint2','h1-btn2','h1-hint1')">ヒント②</button>
-        <div class="hint-text" id="h1-hint2">3つの行はそれぞれ異なる文字で始まっている。その先頭の1文字ずつを、上から順番に並べてみよう。</div>
+        <div class="hint-text" id="h1-hint2">3つの日にちをそれぞれ数字で読み取ろう。2021-09-18 なら「18」、2022-07-05 なら「5」、2023-10-09 なら「9」だ。</div>
       </div>
       <div>
         <button class="hint-btn" id="h1-btn3" onclick="toggleHint('h1-hint3','h1-btn3','h1-hint2')">ヒント③</button>
-        <div class="hint-text" id="h1-hint3">R、E、I の3文字。この物語に登場するある人物の名前を、ローマ字で読んでみよう。</div>
+        <div class="hint-text" id="h1-hint3">A=1、B=2……R=18、E=5、I=9。3つを上から順に並べると、この物語に登場するある人物の名前になる。</div>
       </div>
     </div>
 
