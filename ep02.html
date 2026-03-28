@@ -240,6 +240,7 @@
 
   .critical-tag { color: #ff6644; }
   .key-num { color: #ffdd44; text-shadow: 0 0 5px #ffdd4455; font-weight: bold; font-size: 14px; }
+  .binary-label { font-size: 10px; color: #00ff8855; letter-spacing: 1px; margin-bottom: 6px; display: block; }
 </style>
 
   <!-- OGP -->
@@ -298,22 +299,23 @@
     <div class="stage-title">STAGE 02「クリティカルログ」</div>
 
     <div class="log-block">
-      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR_<span class="key-num">0</span>: 予期しない終了</span>
-      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR_<span class="key-num">7</span>: メモリ解放失敗</span>
+      <span class="binary-label">※ このシステムのCRITICALエラーコードは2進数で記録されている</span>
+      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR:<span class="key-num">00000000</span> - 予期しない終了</span>
+      <span style="display:block"><span class="critical-tag">[CRITICAL]</span> ERR:<span class="key-num">00000111</span> - メモリ解放失敗</span>
     </div>
 
     <div class="hint-area">
       <div>
         <button class="hint-btn" id="h2-btn1" onclick="toggleHint('h2-hint1','h2-btn1',null)">ヒント①</button>
-        <div class="hint-text" id="h2-hint1">[CRITICAL] というタグや「予期しない終了」という説明は関係ない。ERR_ の部分だけを見よう。</div>
+        <div class="hint-text" id="h2-hint1">[CRITICAL] タグや説明文は関係ない。ERR: に続く数字の羅列に注目しよう。これは2進数（0と1だけで表された数）だ。</div>
       </div>
       <div>
         <button class="hint-btn" id="h2-btn2" onclick="toggleHint('h2-hint2','h2-btn2','h2-hint1')">ヒント②</button>
-        <div class="hint-text" id="h2-hint2">ERR_ の後ろに数字がついている。2行あるので、それぞれ1桁ずつ取れる。</div>
+        <div class="hint-text" id="h2-hint2">2進数を10進数に変換してみよう。00000000 は 0 。00000111 は… 4+2+1 = 7 だ。</div>
       </div>
       <div>
         <button class="hint-btn" id="h2-btn3" onclick="toggleHint('h2-hint3','h2-btn3','h2-hint2')">ヒント③</button>
-        <div class="hint-text" id="h2-hint3">ERR_0 と ERR_7、上から順に並べると「07」になる。0から始まる2桁の数字として入力しよう。</div>
+        <div class="hint-text" id="h2-hint3">1行目が 0、2行目が 7。上から順に並べると「07」になる。0から始まる2桁として入力しよう。</div>
       </div>
     </div>
 

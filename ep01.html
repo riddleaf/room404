@@ -70,6 +70,8 @@
   .log-time { color: #00ff8855; }
   .log-text { color: #88ffcc; }
   .key-char { color: #00ffee; text-shadow: 0 0 6px #00ffee55; font-weight: bold; }
+  .code-table { background: #030308; border: 1px solid #00ff8833; padding: 10px 14px; margin-bottom: 16px; font-size: 11px; color: #66ffaa; line-height: 1.8; }
+  .code-table-title { font-size: 10px; color: #00ff8866; letter-spacing: 2px; margin-bottom: 6px; }
 
   .hint-area {
     margin-bottom: 20px;
@@ -278,25 +280,32 @@
     <div class="step-label">STEP 1 / 2</div>
     <div class="stage-title">STAGE 01「デバッグログ」</div>
 
+    <div class="code-table">
+      <div class="code-table-title">エラー分類コード表（野々村の開発マニュアルより抜粋）</div>
+      Access→A &nbsp; Buffer→B &nbsp; Detect→D &nbsp; Heap→H<br>
+      Index→I &nbsp;&nbsp; Kernel→K &nbsp; Memory→M &nbsp; Null→N<br>
+      Object→O &nbsp; Runtime→R &nbsp; Stack→S &nbsp;&nbsp; Thread→T
+    </div>
+
     <div class="log-block">
-      <span class="log-line"><span class="log-time">[00:00:01]</span> <span class="log-text"><span class="key-char">D</span>etected anomaly in save file header</span></span>
-      <span class="log-line"><span class="log-time">[00:00:02]</span> <span class="log-text"><span class="key-char">O</span>bject initialization skipped: null reference</span></span>
-      <span class="log-line"><span class="log-time">[00:00:03]</span> <span class="log-text"><span class="key-char">O</span>bject renderer disconnected from pipeline</span></span>
-      <span class="log-line"><span class="log-time">[00:00:04]</span> <span class="log-text"><span class="key-char">R</span>untime: segmentation fault at address 0xFF</span></span>
+      <span class="log-line"><span class="log-time">[ERR-01]</span> <span class="log-text">Detect: anomaly in save file header</span></span>
+      <span class="log-line"><span class="log-time">[ERR-02]</span> <span class="log-text">Object: initialization skipped: null reference</span></span>
+      <span class="log-line"><span class="log-time">[ERR-03]</span> <span class="log-text">Object: renderer disconnected from pipeline</span></span>
+      <span class="log-line"><span class="log-time">[ERR-04]</span> <span class="log-text">Runtime: segmentation fault at address 0xFF</span></span>
     </div>
 
     <div class="hint-area">
       <div>
         <button class="hint-btn" id="h1-btn1" onclick="toggleHint('h1-hint1', 'h1-btn1', null)">ヒント①</button>
-        <div class="hint-text" id="h1-hint1">タイムスタンプ [00:00:01] や 0xFF のような数字は関係ない。ログのテキスト部分だけを見よう。</div>
+        <div class="hint-text" id="h1-hint1">各エラー行の先頭にある単語（Detect / Object / Object / Runtime）が、エラーの「分類」を示している。</div>
       </div>
       <div>
         <button class="hint-btn" id="h1-btn2" onclick="toggleHint('h1-hint2', 'h1-btn2', 'h1-hint1')">ヒント②</button>
-        <div class="hint-text" id="h1-hint2">4行それぞれで、最初に登場する英単語に注目してみよう。</div>
+        <div class="hint-text" id="h1-hint2">上のコード表でその分類を引くと、それぞれ1文字のコードに対応している。4行分引いてみよう。</div>
       </div>
       <div>
         <button class="hint-btn" id="h1-btn3" onclick="toggleHint('h1-hint3', 'h1-btn3', 'h1-hint2')">ヒント③</button>
-        <div class="hint-text" id="h1-hint3">その4つの単語の頭文字を上から順に並べると、4文字の英単語になる。Detected / Object / Object / Runtime ——。</div>
+        <div class="hint-text" id="h1-hint3">Detect→D, Object→O, Object→O, Runtime→R。上から順に並べると4文字の英単語になる。</div>
       </div>
     </div>
 
@@ -316,21 +325,23 @@
       上の「ROOM_404タイトル画面」の画像をもう一度見てください。
     </div>
     <div class="note-instruction">
-      明るく輝く星だけを追うと、数字が見えてくるはずです。
+      画面は左右に分割されています。<br>
+      SECTOR_01（左）とSECTOR_02（右）それぞれに、明るく輝く星がいくつあるか数えてみよう。<br>
+      セクター番号順に2桁で答えよ。
     </div>
 
     <div class="hint-area">
       <div>
         <button class="hint-btn" id="h2-btn1" onclick="toggleHint('h2-hint1', 'h2-btn1', null)">ヒント①</button>
-        <div class="hint-text" id="h2-hint1">画面全体をぼんやり見てみよう。薄暗い星の中に、明らかに他より明るく輝いている星がある。</div>
+        <div class="hint-text" id="h2-hint1">明るく輝く金色の星と、薄暗い青みがかった星がある。金色の星だけを数えよう。</div>
       </div>
       <div>
         <button class="hint-btn" id="h2-btn2" onclick="toggleHint('h2-hint2', 'h2-btn2', 'h2-hint1')">ヒント②</button>
-        <div class="hint-text" id="h2-hint2">明るい星は画面の左側と右側に分かれて集まっている。それぞれの塊を独立したグループとして見てみよう。</div>
+        <div class="hint-text" id="h2-hint2">中央の破線で画面が左右に分かれている。SECTOR_01（左）の金色の星の数と、SECTOR_02（右）の金色の星の数を、それぞれ別々に数えよう。</div>
       </div>
       <div>
         <button class="hint-btn" id="h2-btn3" onclick="toggleHint('h2-hint3', 'h2-btn3', 'h2-hint2')">ヒント③</button>
-        <div class="hint-text" id="h2-hint3">左の塊と右の塊が、それぞれ1つの数字の形を作っている。2つの数字を左から順に並べると、2桁の答えになる。</div>
+        <div class="hint-text" id="h2-hint3">SECTOR_01に4つ、SECTOR_02に2つ。セクター番号順に並べると2桁の数字になる。</div>
       </div>
     </div>
 
